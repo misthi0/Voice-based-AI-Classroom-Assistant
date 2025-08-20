@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#667eea" />
+    <meta name="description" content="AI Voice-based Classroom Assistant" />
+    <title>Panda by Binary Brains - Classroom Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        /* Reset and base styles */
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+
+        body {
+          margin: 0;
+          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+            'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+            sans-serif;
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          min-height: 100vh;
+          overflow-x: hidden;
+        }
+
+        /* App container */
+        .app {
+          min-height: 100vh;
+          padding: 20px;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          position: relative;
+        }
+
+        .app-container {
+          max-width: 1200px;
+          margin: 0 auto;
+          position: relative;
+          z-index: 1;
+        }
+
+        /* Glass effect */
+        .glass-effect {
+          background: rgba(255, 255, 255, 0.25);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          border-radius: 20px;
+          border: 1px solid rgba(255, 255, 255, 0.18);
+          box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+
+        /* Header */
+        .header {
+          padding: 0;
+          margin-bottom: 25px;
+          overflow: hidden;
+        }
+
+        /* SRM Header Image */
+        .srm-header {
+          position: relative;
+          height: 200px;
+          overflow: hidden;
+          border-radius: 20px 20px 0 0;
+        }
+
+        .srm-image {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          filter: brightness(0.7);
+        }
+
+        .srm-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.7));
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          text-align: center;
+          color: white;
+          padding: 20px;
+        }
+
+        .srm-title {
+          font-size: 1.8rem;
+          font-weight: 700;
+          margin-bottom: 8px;
+          text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .srm-subtitle {
+          font-size: 1rem;
+          font-weight: 500;
+          opacity: 0.9;
+          text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .header-content {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 25px 30px;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 0 0 20px 20px;
+        }
+
+        .logo {
+          display: flex;
+          align-items: center;
+          gap: 15px;
+          position: relative;
+        }
+
+        .gradient-text {
+          background: linear-gradient(45deg, #ffffff, #e0e7ff);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          font-size: 2rem;
+          font-weight: 700;
+          margin: 0;
+        }
+
+        .institution-badge {
+          background: rgba(255, 255, 255, 0.2);
+          color: rgba(255, 255, 255, 0.9);
+          padding: 5px 12px;
+          border-radius: 12px;
+          font-size: 0.8rem;
+          font-weight: 600;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .header-stats {
+          display: flex;
+          gap: 20px;
+          flex-wrap: wrap;
+        }
+
+        .stat-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          color: rgba(255, 255, 255, 0.9);
+          font-size: 0.9rem;
+          font-weight: 500;
+        }
+
+        /* Main content */
+        .main-content {
+          display: grid;
+          grid-template-columns: 2fr 1fr;
+          gap: 25px;
+          align-items: start;
+        }
+
+        /* Chat container */
+        .chat-container {
+          padding: 25px;
+          display: flex;
+          flex-direction: column;
+          height: 600px;
+        }
+
+        .chat-header {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 20px;
+          padding-bottom: 15px;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .chat-header h2 {
+          color: rgba(255, 255, 255, 0.9);
+          font-weight: 600;
+          flex: 1;
+        }
+
+        .chat-status {
+          font-size: 0.85rem;
+          font-weight: 500;
+        }
+
+        .ready-indicator {
+          color: rgba(255, 255, 255, 0.7);
+        }
+
+        .speaking-indicator,
+        .listening-indicator {
+          color: #4ade80;
+          font-weight: 500;
+        }
+
+        .pulse-animation {
+          animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+          0% { opacity: 1; }
+          50% { opacity: 0.5; }
+          100% { opacity: 1; }
+        }
+
+        /* Messages */
+        .messages-container {
+          flex: 1;
+          overflow-y: auto;
+          padding-right: 10px;
+          margin-bottom: 20px;
+          max-height: 400px;
+        }
+
+        .messages-container::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        .messages-container::-webkit-scrollbar-track {
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 3px;
+        }
+
+        .messages-container::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.3);
+          border-radius: 3px;
+        }
+
+        .message {
+          margin-bottom: 15px;
+          padding: 15px 18px;
+          border-radius: 18px;
+          max-width: 85%;
+          word-wrap: break-word;
+          animation: messageSlide 0.3s ease-out;
+        }
+
+        .message.user {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          margin-left: auto;
+          border-bottom-right-radius: 5px;
+        }
+
+        .message.assistant {
+          background: rgba(255, 255, 255, 0.9);
+          color: #333;
+          border-bottom-left-radius: 5px;
+        }
+
+        .message-text {
+          font-size: 0.95rem;
+          line-height: 1.5;
+          margin: 0;
+        }
+
+        .message-time {
+          font-size: 0.75rem;
+          opacity: 0.7;
+          margin-top: 5px;
+        }
+
+        @keyframes messageSlide {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        .typing-indicator {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 15px 18px;
+          background: rgba(255, 255, 255, 0.9);
+          border-radius: 18px;
+          border-bottom-left-radius: 5px;
+          max-width: 80px;
+          margin-bottom: 15px;
+        }
+
+        .typing-dots {
+          display: flex;
+          gap: 3px;
+        }
+
+        .typing-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: #666;
+          animation: typingPulse 1.4s infinite ease-in-out;
+        }
+
+        .typing-dot:nth-child(2) {
+          animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+          animation-delay: 0.4s;
+        }
+
+        @keyframes typingPulse {
+          0%, 80%, 100% { opacity: 0.3; }
+          40% { opacity: 1; }
+        }
+
+        /* Input area */
+        .input-area {
+          border-top: 1px solid rgba(255, 255, 255, 0.2);
+          padding-top: 15px;
+        }
+
+        .text-input-container {
+          display: flex;
+          gap: 10px;
+          align-items: center;
+        }
+
+        .text-input {
+          flex: 1;
+          padding: 12px 16px;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          border-radius: 25px;
+          background: rgba(255, 255, 255, 0.1);
+          color: rgba(255, 255, 255, 0.9);
+          font-size: 0.95rem;
+          outline: none;
+          transition: all 0.2s ease;
+        }
+
+        .text-input::placeholder {
+          color: rgba(255, 255, 255, 0.6);
+        }
+
+        .text-input:focus {
+          border-color: rgba(255, 255, 255, 0.5);
+          background: rgba(255, 255, 255, 0.15);
+        }
+
+        .send-button {
+          padding: 12px;
+          border: none;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .send-button:hover:not(:disabled) {
+          transform: scale(1.05);
+          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .send-button:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        /* Voice controls */
+        .voice-controls {
+          padding: 25px;
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+        }
+
+        .voice-controls h3 {
+          color: rgba(255, 255, 255, 0.9);
+          font-weight: 600;
+          margin: 0;
+        }
+
+        .control-buttons {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .voice-button {
+          padding: 15px 20px;
+          border: 2px solid rgba(255, 255, 255, 0.3);
+          border-radius: 12px;
+          background: rgba(255, 255, 255, 0.1);
+          color: rgba(255, 255, 255, 0.9);
+          font-size: 0.9rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+        }
+
+        .voice-button:hover:not(:disabled) {
+          background: rgba(255, 255, 255, 0.2);
+          border-color: rgba(255, 255, 255, 0.4);
+          transform: translateY(-1px);
+        }
+
+        .voice-button:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .voice-button.active {
+          background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+          border-color: #4ade80;
+          color: white;
+        }
+
+        .voice-button.error {
+          background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+          border-color: #ef4444;
+          color: white;
+        }
+
+        .subject-buttons {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 10px;
+          margin-top: 15px;
+        }
+
+        .subject-button {
+          padding: 12px 16px;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          border-radius: 10px;
+          background: rgba(255, 255, 255, 0.1);
+          color: rgba(255, 255, 255, 0.9);
+          font-size: 0.85rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          text-align: center;
+        }
+
+        .subject-button:hover {
+          background: rgba(255, 255, 255, 0.2);
+          border-color: rgba(255, 255, 255, 0.4);
+          transform: translateY(-1px);
+        }
+
+        /* Floating elements */
+        .floating-elements {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          pointer-events: none;
+          z-index: 0;
+        }
+
+        .floating-icon {
+          position: absolute;
+          font-size: 2rem;
+          opacity: 0.1;
+          user-select: none;
+        }
+
+        .floating-animation {
+          animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-20px); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+          .app {
+            padding: 10px;
+          }
+          
+          .main-content {
+            grid-template-columns: 1fr;
+            gap: 15px;
+          }
+          
+          .header-content {
+            flex-direction: column;
+            gap: 15px;
+            text-align: center;
+          }
+          
+          .header-stats {
+            justify-content: center;
+          }
+          
+          .subject-buttons {
+            grid-template-columns: 1fr;
+          }
+          
+          .messages-container {
+            max-height: 300px;
+          }
+          
+          .chat-container {
+            height: 500px;
+          }
+          
+          .srm-header {
+            height: 150px;
+          }
+          
+          .srm-title {
+            font-size: 1.4rem;
+          }
+          
+          .srm-subtitle {
+            font-size: 0.9rem;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .header-content {
+            padding: 15px 20px;
+          }
+          
+          .chat-container,
+          .voice-controls {
+            padding: 20px;
+          }
+          
+          .gradient-text {
+            font-size: 1.5rem;
+          }
+          
+          .control-buttons {
+            gap: 8px;
+          }
+          
+          .voice-button {
+            padding: 12px;
+          }
+          
+          .subject-button {
+            padding: 10px;
+          }
+          
+          .srm-header {
+            height: 120px;
+          }
+          
+          .srm-title {
+            font-size: 1.2rem;
+          }
+          
+          .srm-subtitle {
+            font-size: 0.8rem;
+          }
+          
+          .institution-badge {
+            font-size: 0.7rem;
+            padding: 3px 8px;
+          }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        const App = () => {
+          const [isListening, setIsListening] = useState(false);
+          const [isSpeaking, setIsSpeaking] = useState(false);
+          const [transcript, setTranscript] = useState('');
+          const [messages, setMessages] = useState([
+            {
+              type: 'assistant',
+              text: 'Hello! I\'m Panda by Binary Brains, your AI classroom assistant. Ask me anything about math, science, history, or any subject!',
+              timestamp: new Date()
+            }
+          ]);
+          const [isTyping, setIsTyping] = useState(false);
+          const [micPermission, setMicPermission] = useState(null);
+          const recognitionRef = useRef(null);
+          const synthRef = useRef(null);
+
+          useEffect(() => {
+            // Initialize Speech Recognition
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+              const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
+              recognitionRef.current = new SpeechRecognition();
+
+              // Configure recognition settings for better reliability
+              recognitionRef.current.continuous = true;
+              recognitionRef.current.interimResults = true;
+              recognitionRef.current.lang = 'en-US';
+              recognitionRef.current.maxAlternatives = 1;
+
+              recognitionRef.current.onstart = () => {
+                console.log('Speech recognition started successfully');
+                setIsListening(true);
+                setTranscript('');
+              };
+
+              recognitionRef.current.onresult = (event) => {
+                console.log('Speech recognition result received');
+                let interimTranscript = '';
+                let finalTranscript = '';
+
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                  const transcript = event.results[i][0].transcript;
+                  if (event.results[i].isFinal) {
+                    finalTranscript += transcript;
+                  } else {
+                    interimTranscript += transcript;
+                  }
+                }
+
+                const fullTranscript = finalTranscript || interimTranscript;
+                console.log('Full transcript:', fullTranscript);
+                
+                setTranscript(fullTranscript);
+
+                // Process final transcript
+                if (finalTranscript.trim()) {
+                  console.log('Processing final transcript:', finalTranscript);
+                  handleSpeechInput(finalTranscript.trim());
+                }
+              };
+
+              recognitionRef.current.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                setIsListening(false);
+                
+                if (event.error === 'not-allowed') {
+                  setMicPermission('denied');
+                }
+              };
+
+              recognitionRef.current.onend = () => {
+                console.log('Speech recognition ended');
+                setIsListening(false);
+                setTranscript('');
+              };
+            }
+
+            // Initialize Speech Synthesis
+            if ('speechSynthesis' in window) {
+              synthRef.current = window.speechSynthesis;
+            }
+
+            // Request microphone permissions
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+              navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(() => {
+                  console.log('Microphone permission granted');
+                  setMicPermission('granted');
+                })
+                .catch((error) => {
+                  console.error('Microphone permission denied:', error);
+                  setMicPermission('denied');
+                });
+            }
+          }, []);
+
+          const handleSpeechInput = (input) => {
+            if (!input.trim()) return;
+
+            // Add user message
+            const userMessage = {
+              type: 'user',
+              text: input,
+              timestamp: new Date()
+            };
+
+            setMessages(prev => [...prev, userMessage]);
+
+            // Process the input and generate response
+            setTimeout(() => {
+              const response = generateResponse(input.toLowerCase());
+              const assistantMessage = {
+                type: 'assistant',
+                text: response,
+                timestamp: new Date()
+              };
+
+              setMessages(prev => [...prev, assistantMessage]);
+              
+              // Speak the response
+              speakText(response);
+            }, 500);
+          };
+
+          const generateResponse = (input) => {
+            // Remove common question words for better matching
+            const processedInput = input.replace(/\b(what|is|the|a|an|how|why|when|where|can|you|please|tell|me|about)\b/g, '').trim();
+            
+            // Math questions
+            if (input.includes('math') || input.includes('calculate') || input.includes('plus') || input.includes('minus') || input.includes('multiply') || input.includes('divide')) {
+              if (input.match(/\d+/)) {
+                const numbers = input.match(/\d+/g);
+                if (numbers && numbers.length >= 2) {
+                  const num1 = parseInt(numbers[0]);
+                  const num2 = parseInt(numbers[1]);
+                  if (input.includes('plus') || input.includes('add')) {
+                    return `${num1} plus ${num2} equals ${num1 + num2}. Math is fun when you break it down step by step!`;
+                  }
+                  if (input.includes('minus') || input.includes('subtract')) {
+                    return `${num1} minus ${num2} equals ${num1 - num2}. Remember, subtraction is just adding a negative number!`;
+                  }
+                  if (input.includes('multiply') || input.includes('times')) {
+                    return `${num1} times ${num2} equals ${num1 * num2}. Multiplication is repeated addition!`;
+                  }
+                  if (input.includes('divide')) {
+                    return `${num1} divided by ${num2} equals ${num1 / num2}. Division is the opposite of multiplication!`;
+                  }
+                }
+              }
+              return "I love helping with math! You can ask me to add, subtract, multiply, or divide numbers. I can also explain concepts like fractions, geometry, or algebra. What specific math topic interests you?";
+            }
+
+            // Science questions
+            if (input.includes('science') || input.includes('physics') || input.includes('chemistry') || input.includes('biology')) {
+              return "Science is amazing! I can help with physics concepts like gravity and motion, chemistry topics like atoms and molecules, or biology subjects like plants and animals. What specific science question do you have?";
+            }
+
+            // Specific science topics
+            if (input.includes('gravity')) {
+              return "Gravity is the force that pulls objects toward each other! On Earth, gravity pulls everything toward the center, which is why things fall down. The stronger the mass, the stronger the gravitational pull. That's why the Sun's gravity keeps all the planets in orbit!";
+            }
+
+            if (input.includes('photosynthesis')) {
+              return "Photosynthesis is how plants make food using sunlight! The equation is: 6CO₂ + 6H₂O + light energy → C₆H₁₂O₆ + 6O₂. Plants take in carbon dioxide and water, use sunlight to create glucose for energy, and release oxygen as a byproduct.";
+            }
+
+            if (input.includes('periodic table') || input.includes('elements')) {
+              return "The periodic table organizes all chemical elements by their atomic number (number of protons). Elements in the same column have similar properties. For example, hydrogen has 1 proton, helium has 2, and so on!";
+            }
+
+            // History questions
+            if (input.includes('world war') || input.includes('ww1') || input.includes('ww2')) {
+              return "The World Wars were major global conflicts. WWI (1914-1918) was triggered by the assassination of Archduke Franz Ferdinand. WWII (1939-1945) was caused by rising tensions and aggression from Nazi Germany. Would you like to know about specific battles or events?";
+            }
+
+            if (input.includes('independence') && input.includes('india')) {
+              return "India gained independence from British rule on August 15, 1947, led by Mahatma Gandhi's non-violent resistance movement. The struggle involved civil disobedience, boycotts, and mass protests spanning decades. It's a remarkable example of peaceful revolution!";
+            }
+
+            // Math concepts
+            if (input.includes('pythagorean theorem') || input.includes('pythagoras')) {
+              return "The Pythagorean theorem states that in a right triangle, a² + b² = c², where c is the hypotenuse (longest side). For example, if the two shorter sides are 3 and 4, then c² = 9 + 16 = 25, so c = 5!";
+            }
+
+            if (input.includes('algebra') || input.includes('solve for x')) {
+              return "Algebra is about finding unknown values using equations! The key is to isolate the variable. For example, in 2x + 5 = 15, subtract 5 from both sides (2x = 10), then divide by 2 (x = 5). What algebra problem are you working on?";
+            }
+
+            // Geography
+            if (input.includes('capital') && input.includes('india')) {
+              return "The capital of India is New Delhi. It's located in the northern part of the country and serves as the seat of the Indian government.";
+            }
+
+            // General knowledge patterns
+            if (input.includes('what is') || input.includes('define') || input.includes('explain')) {
+              const topic = input.replace(/what is|define|explain|the|a|an/g, '').trim();
+              return `I'd be happy to explain ${topic}! Could you be more specific about what aspect you'd like to learn? For example, if you're asking about ${topic}, are you looking for a definition, examples, or how it works?`;
+            }
+
+            // Basic greetings and conversation
+            if (input.includes('hello') || input.includes('hi') || input.includes('hey')) {
+              return "Hello there! I'm Panda, your friendly AI classroom assistant created by Binary Brains. I'm here to help you learn and explore any subject you're curious about!";
+            }
+
+            if (input.includes('how are you')) {
+              return "I'm doing great, thank you for asking! I'm excited to help you learn something new today. What subject or topic interests you?";
+            }
+
+            if (input.includes('thank you') || input.includes('thanks')) {
+              return "You're very welcome! I'm always happy to help. Learning together is what makes education exciting. Is there anything else you'd like to explore?";
+            }
+
+            // English and Literature
+            if (input.includes('shakespeare')) {
+              return "William Shakespeare (1564-1616) was an English playwright and poet, often called the greatest writer in the English language. He wrote famous plays like Hamlet, Romeo and Juliet, and Macbeth. His works explore universal themes of love, ambition, and human nature.";
+            }
+
+            if (input.includes('grammar') || input.includes('noun') || input.includes('verb') || input.includes('adjective')) {
+              return "Grammar is the structure of language! Nouns are people, places, or things (cat, school, happiness). Verbs are action words (run, think, be). Adjectives describe nouns (big, beautiful, smart). What specific grammar rule would you like to learn?";
+            }
+
+            // Study techniques
+            if (input.includes('how to study') || input.includes('study tips')) {
+              return "Here are proven study techniques: 1) Active recall - test yourself instead of just re-reading, 2) Spaced repetition - review material at increasing intervals, 3) Pomodoro technique - study for 25 minutes, break for 5, 4) Teach someone else - explaining helps you understand better!";
+            }
+
+            // Basic science concepts
+            if (input.includes('atom') || input.includes('molecule')) {
+              return "Atoms are the building blocks of matter! They contain protons (positive), neutrons (neutral) in the nucleus, and electrons (negative) orbiting around. When atoms bond together, they form molecules, like H₂O for water!";
+            }
+
+            // Technology and programming
+            if (input.includes('computer') || input.includes('programming') || input.includes('coding')) {
+              return "Programming is like giving instructions to a computer! You write code using languages like Python, JavaScript, or Java. Computers follow these instructions step by step. It's a great skill that combines logic, creativity, and problem-solving!";
+            }
+
+            // Default responses for unrecognized input
+            const fallbackResponses = [
+              "That's an interesting question! While I don't have specific information about that topic right now, I'd love to help you explore subjects like math, science, history, literature, or study techniques. What would you like to learn about?",
+              "I'm still learning about many topics! I'm particularly good at helping with mathematics, basic science concepts, history, and study strategies. Is there a specific subject area I can assist you with?",
+              "I want to make sure I give you accurate information! Could you ask me about math problems, science concepts, historical events, or study tips? I'm here to help you learn!",
+              "Great question! I'm specialized in educational topics like mathematics, science fundamentals, world history, and learning techniques. What academic subject interests you most?"
+            ];
+
+            return fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
+          };
+
+          const startListening = async () => {
+            if (micPermission === 'denied') {
+              alert('Microphone access is required for voice input. Please enable microphone permissions in your browser settings.');
+              return;
+            }
+
+            if (micPermission !== 'granted') {
+              try {
+                await navigator.mediaDevices.getUserMedia({ audio: true });
+                setMicPermission('granted');
+              } catch (error) {
+                console.error('Failed to get microphone permission:', error);
+                setMicPermission('denied');
+                return;
+              }
+            }
+
+            if (recognitionRef.current && !isListening) {
+              try {
+                console.log('Starting speech recognition...');
+                recognitionRef.current.start();
+              } catch (error) {
+                console.error('Error starting speech recognition:', error);
+              }
+            }
+          };
+
+          const stopListening = () => {
+            if (recognitionRef.current && isListening) {
+              recognitionRef.current.stop();
+            }
+          };
+
+          const speakText = (text) => {
+            if (synthRef.current && text) {
+              // Cancel any ongoing speech
+              synthRef.current.cancel();
+              
+              const utterance = new SpeechSynthesisUtterance(text);
+              utterance.rate = 0.9;
+              utterance.pitch = 1;
+              utterance.volume = 0.8;
+              
+              // Try to find a female voice
+              const voices = synthRef.current.getVoices();
+              const femaleVoice = voices.find(voice => 
+                voice.name.toLowerCase().includes('female') ||
+                voice.name.toLowerCase().includes('zira') ||
+                voice.name.toLowerCase().includes('hazel') ||
+                voice.name.toLowerCase().includes('karen') ||
+                voice.name.toLowerCase().includes('susan')
+              );
+              
+              if (femaleVoice) {
+                utterance.voice = femaleVoice;
+              }
+
+              utterance.onstart = () => setIsSpeaking(true);
+              utterance.onend = () => setIsSpeaking(false);
+              utterance.onerror = () => setIsSpeaking(false);
+
+              synthRef.current.speak(utterance);
+            }
+          };
+
+          const handleSubjectClick = (subject) => {
+            const prompts = {
+              'Mathematics': 'Tell me about mathematics and how it helps us solve problems.',
+              'Science': 'Explain basic science concepts that are important to understand.',
+              'History': 'Share some interesting historical facts and events.',
+              'Literature': 'What should I know about literature and famous authors?',
+              'Geography': 'Tell me about world geography and different countries.',
+              'Study Tips': 'Give me effective study techniques to improve my learning.'
+            };
+
+            const prompt = prompts[subject];
+            if (prompt) {
+              handleSpeechInput(prompt);
+            }
+          };
+
+          const handleTextInput = (e) => {
+            e.preventDefault();
+            const input = e.target.textInput.value.trim();
+            if (input) {
+              handleSpeechInput(input);
+              e.target.textInput.value = '';
+            }
+          };
+
+          const getStatusText = () => {
+            if (isSpeaking) return { text: '🗣️ Speaking...', className: 'speaking-indicator pulse-animation' };
+            if (isListening) return { text: '🎤 Listening...', className: 'listening-indicator pulse-animation' };
+            return { text: '💭 Ready to help', className: 'ready-indicator' };
+          };
+
+          const statusInfo = getStatusText();
+
+          const FloatingElements = () => {
+            const icons = ['🔬', '📚', '🧮', '🌍', '💡', '✏️', '📊', '🎯'];
+            
+            return (
+              <div className="floating-elements">
+                {icons.map((icon, index) => (
+                  <div
+                    key={index}
+                    className="floating-icon floating-animation"
+                    style={{
+                      left: `${Math.random() * 100}%`,
+                      top: `${Math.random() * 100}%`,
+                      animationDelay: `${Math.random() * 6}s`,
+                      animationDuration: `${4 + Math.random() * 4}s`
+                    }}
+                  >
+                    {icon}
+                  </div>
+                ))}
+              </div>
+            );
+          };
+
+          return (
+            <div className="app">
+              <FloatingElements />
+              <div className="app-container">
+                <header className="header glass-effect">
+                  <div className="srm-header">
+                    <img 
+                      src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 300'%3E%3Crect width='800' height='300' fill='%234f46e5'/%3E%3Ctext x='400' y='120' text-anchor='middle' fill='white' font-size='48' font-weight='bold'%3ESRM Institute%3C/text%3E%3Ctext x='400' y='170' text-anchor='middle' fill='white' font-size='24'%3EKattankulathur Campus%3C/text%3E%3Ctext x='400' y='220' text-anchor='middle' fill='white' font-size='16'%3EExcellence in Education%3C/text%3E%3C/svg%3E" 
+                      alt="SRM Institute of Science and Technology - Kattankulathur Campus" 
+                      className="srm-image"
+                    />
+                    <div className="srm-overlay">
+                      <h1 className="srm-title">SRM Institute of Science and Technology</h1>
+                      <p className="srm-subtitle">Kattankulathur Campus • Excellence in Education</p>
+                    </div>
+                  </div>
+                  
+                  <div className="header-content">
+                    <div className="logo">
+                      <h1 className="gradient-text">🐼 Panda</h1>
+                      <span className="institution-badge">by Binary Brains</span>
+                    </div>
+                    <div className="header-stats">
+                      <div className="stat-item">
+                        <span>🎯</span>
+                        <span>Smart Learning</span>
+                      </div>
+                      <div className="stat-item">
+                        <span>🎤</span>
+                        <span>Voice Enabled</span>
+                      </div>
+                      <div className="stat-item">
+                        <span>🧠</span>
+                        <span>AI Powered</span>
+                      </div>
+                    </div>
+                  </div>
+                </header>
+
+                <main className="main-content">
+                  <section className="chat-container glass-effect">
+                    <div className="chat-header">
+                      <h2>💬 Chat with Panda</h2>
+                      <div className={`chat-status ${statusInfo.className}`}>
+                        {statusInfo.text}
+                      </div>
+                    </div>
+
+                    <div className="messages-container">
+                      {messages.map((message, index) => (
+                        <div key={index} className={`message ${message.type}`}>
+                          <div className="message-text">{message.text}</div>
+                          <div className="message-time">
+                            {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </div>
+                        </div>
+                      ))}
+                      
+                      {isTyping && (
+                        <div className="typing-indicator">
+                          <div className="typing-dots">
+                            <div className="typing-dot"></div>
+                            <div className="typing-dot"></div>
+                            <div className="typing-dot"></div>
+                          </div>
+                        </div>
+                      )}
+
+                      {transcript && isListening && (
+                        <div className="message user" style={{ opacity: 0.7 }}>
+                          <div className="message-text">{transcript}</div>
+                          <div className="message-time">Listening...</div>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="input-area">
+                      <form onSubmit={handleTextInput} className="text-input-container">
+                        <input
+                          name="textInput"
+                          type="text"
+                          placeholder="Type your question here..."
+                          className="text-input"
+                          disabled={isListening || isSpeaking}
+                        />
+                        <button
+                          type="submit"
+                          className="send-button"
+                          disabled={isListening || isSpeaking}
+                        >
+                          ➤
+                        </button>
+                      </form>
+                    </div>
+                  </section>
+
+                  <aside className="voice-controls glass-effect">
+                    <h3>🎤 Voice Controls</h3>
+                    
+                    <div className="control-buttons">
+                      <button
+                        onClick={startListening}
+                        disabled={isListening || micPermission === 'denied'}
+                        className={`voice-button ${isListening ? 'active' : ''} ${micPermission === 'denied' ? 'error' : ''}`}
+                      >
+                        {isListening ? '🎤 Listening...' : '🎤 Start Listening'}
+                      </button>
+
+                      <button
+                        onClick={stopListening}
+                        disabled={!isListening}
+                        className="voice-button"
+                      >
+                        ⏹️ Stop Listening
+                      </button>
+
+                      {micPermission === 'denied' && (
+                        <div style={{ 
+                          color: '#ef4444', 
+                          fontSize: '0.85rem', 
+                          padding: '10px', 
+                          textAlign: 'center',
+                          background: 'rgba(239, 68, 68, 0.1)',
+                          borderRadius: '8px',
+                          border: '1px solid rgba(239, 68, 68, 0.3)'
+                        }}>
+                          ⚠️ Microphone access required for voice features
+                        </div>
+                      )}
+                    </div>
+
+                    <h4 style={{ color: 'rgba(255, 255, 255, 0.9)', fontSize: '0.9rem', margin: '20px 0 10px 0' }}>
+                      📚 Quick Topics
+                    </h4>
+                    <div className="subject-buttons">
+                      {['Mathematics', 'Science', 'History', 'Literature', 'Geography', 'Study Tips'].map((subject) => (
+                        <button
+                          key={subject}
+                          onClick={() => handleSubjectClick(subject)}
+                          className="subject-button"
+                          disabled={isListening || isSpeaking}
+                        >
+                          <span>{subject}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </aside>
+                </main>
+              </div>
+            </div>
+          );
+        };
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
